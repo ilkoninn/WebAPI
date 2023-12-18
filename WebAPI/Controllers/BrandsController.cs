@@ -52,7 +52,6 @@ namespace WebAPI.Controllers
 
         //<-- Update API Section -->
         [HttpPut]
-        [Route("{Id}")]
         public async Task<IActionResult> Update(int Id, string name)
         {
             if (Id < 0 && Id == null) return BadRequest();
@@ -63,6 +62,20 @@ namespace WebAPI.Controllers
             oldBrand.CreatedDate = oldBrand.CreatedDate;
             oldBrand.UpdatedDate = DateTime.Now;
 
+            await _db.SaveChangesAsync();
+
+            return StatusCode(StatusCodes.Status200OK, oldBrand);
+        }
+
+        //<-- Delete API Section -->
+        [HttpDelete]
+        public async Task<IActionResult> Delete(int Id)
+        {
+            if (Id < 0 && Id == null) return BadRequest();
+            Brand oldBrand = await _db.Brands.FirstOrDefaultAsync(x => x.Id == Id);
+            if (oldBrand == null) return NotFound();
+
+            _db.Brands.Remove(oldBrand);
             await _db.SaveChangesAsync();
 
             return StatusCode(StatusCodes.Status200OK, oldBrand);

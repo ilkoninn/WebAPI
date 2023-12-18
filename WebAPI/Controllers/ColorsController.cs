@@ -51,7 +51,6 @@ namespace WebAPI.Controllers
 
         //<-- Update API Section -->
         [HttpPut]
-        [Route("{Id}")]
         public async Task<IActionResult> Update(int Id, string name)
         {
             if (Id < 0 && Id == null) return BadRequest();
@@ -62,6 +61,20 @@ namespace WebAPI.Controllers
             oldColor.CreatedDate = oldColor.CreatedDate;
             oldColor.UpdatedDate = DateTime.Now;
 
+            await _db.SaveChangesAsync();
+
+            return StatusCode(StatusCodes.Status200OK, oldColor);
+        }
+
+        //<-- Delete API Section -->
+        [HttpDelete]
+        public async Task<IActionResult> Delete(int Id)
+        {
+            if (Id < 0 && Id == null) return BadRequest();
+            Color oldColor = await _db.Colors.FirstOrDefaultAsync(x => x.Id == Id);
+            if (oldColor == null) return NotFound();
+
+            _db.Colors.Remove(oldColor);
             await _db.SaveChangesAsync();
 
             return StatusCode(StatusCodes.Status200OK, oldColor);

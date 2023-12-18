@@ -1,4 +1,6 @@
 ﻿
+using Microsoft.AspNetCore.Mvc;
+
 namespace WebAPI.Controllers
 {
     [Route("api/[controller]")]
@@ -49,7 +51,6 @@ namespace WebAPI.Controllers
 
         //<-- Update API Section -->
         [HttpPut]
-        [Route("{Id}")]
         public async Task<IActionResult> Update(int Id, int modelYear, 
             decimal dailyPrice, string description, int colorId, int brandId)
         {
@@ -65,6 +66,20 @@ namespace WebAPI.Controllers
             oldCar.CreatedDate = oldCar.CreatedDate;
             oldCar.UpdatedDate = DateTime.Now;
 
+            await _db.SaveChangesAsync();
+
+            return StatusCode(StatusCodes.Status200OK, oldCar);
+        }
+
+        //<-- Delete API Section -->
+        [HttpDelete]
+        public async Task<IActionResult> Delete(int Id)
+        {
+            if (Id < 0 && Id == null) return BadRequest();
+            Car oldCar = await _db.Cars.FirstOrDefaultAsync(x => x.Id == Id);
+            if (oldCar == null) return NotFound();
+
+            _db.Cars.Remove(oldCar);
             await _db.SaveChangesAsync();
 
             return StatusCode(StatusCodes.Status200OK, oldCar);
