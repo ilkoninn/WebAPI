@@ -50,6 +50,8 @@ namespace WebAPI.Controllers
         }
 
         //<-- Update API Section -->
+        [HttpPut]
+        [Route("{Id}")]
         public async Task<IActionResult> Update(int Id, string name)
         {
             if (Id < 0 && Id == null) return BadRequest();

@@ -48,6 +48,8 @@ namespace WebAPI.Controllers
         }
 
         //<-- Update API Section -->
+        [HttpPut]
+        [Route("{Id}")]
         public async Task<IActionResult> Update(int Id, int modelYear, 
             decimal dailyPrice, string description, int colorId, int brandId)
         {
