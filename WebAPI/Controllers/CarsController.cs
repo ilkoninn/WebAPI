@@ -1,5 +1,7 @@
 ﻿
 using Microsoft.AspNetCore.Mvc;
+using WebAPI.DTOs.CarDTOs;
+using WebAPI.Repositories.Interfaces;
 
 namespace WebAPI.Controllers
 {
@@ -7,18 +9,18 @@ namespace WebAPI.Controllers
     [ApiController]
     public class CarsController : ControllerBase
     {
-        private readonly AppDbContext _db;
+        private readonly ICarRepository _rep;
 
-        public CarsController(AppDbContext db)
+        public CarsController(ICarRepository rep)
         {
-            _db = db;
+            _rep = rep;
         }
 
         // <-- Get API Section -->
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            List<Car> Cars = await _db.Cars.ToListAsync();
+            IQueryable<Car> Cars = await _rep.GetAllAsync();
 
             return StatusCode(StatusCodes.Status200OK, Cars);
         }
@@ -28,7 +30,7 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> GetById(int Id)
         {
             if (Id < 0 && Id == null) return BadRequest();
-            Car oldCar = await _db.Cars.FirstOrDefaultAsync(x => x.Id == Id);
+            Car oldCar = await _rep.GetByIdAsync(Id);
             if (oldCar == null) return NotFound();
 
 
@@ -38,35 +40,42 @@ namespace WebAPI.Controllers
 
         // <-- Create API Section -->
         [HttpPost]
-        public async Task<IActionResult> Create(Car newCar)
+        public async Task<IActionResult> Create([FromForm] CreateCarDTO createCarDTO)
         {
-            newCar.CreatedDate = DateTime.Now;
-            newCar.UpdatedDate = DateTime.Now;
 
-            await _db.Cars.AddAsync(newCar);
-            await _db.SaveChangesAsync();
+            Car newCar = new()
+            {
+                ModelYear = createCarDTO.ModelYear,
+                DailyPrice = createCarDTO.DailyPrice,
+                Description = createCarDTO.Description,
+                ColorId = createCarDTO.ColorId,
+                BrandId = createCarDTO.BrandId,
+            };
+
+            await _rep.CreateAsync(newCar);
+            await _rep.SaveChangesAsync();
 
             return StatusCode(StatusCodes.Status201Created, newCar);
         }
 
         //<-- Update API Section -->
         [HttpPut]
-        public async Task<IActionResult> Update(int Id, int modelYear, 
-            decimal dailyPrice, string description, int colorId, int brandId)
+        public async Task<IActionResult> Update([FromForm] UpdateCarDTO updateCarDTO)
         {
-            if (Id < 0 && Id == null) return BadRequest();
-            Car oldCar = await _db.Cars.FirstOrDefaultAsync(x => x.Id == Id);
+            if (updateCarDTO.Id < 0 && updateCarDTO.Id == null) return BadRequest();
+            Car oldCar = await _rep.GetByIdAsync(updateCarDTO.Id);
             if (oldCar == null) return NotFound();
 
-            oldCar.ModelYear = modelYear;
-            oldCar.Description = description;
-            oldCar.ColorId = colorId;
-            oldCar.BrandId = brandId;
-            oldCar.DailyPrice = dailyPrice;
+            oldCar.ModelYear = updateCarDTO.ModelYear;
+            oldCar.Description = updateCarDTO.Description;
+            oldCar.ColorId = updateCarDTO.ColorId;
+            oldCar.BrandId = updateCarDTO.BrandId;
+            oldCar.DailyPrice = updateCarDTO.DailyPrice;
             oldCar.CreatedDate = oldCar.CreatedDate;
             oldCar.UpdatedDate = DateTime.Now;
 
-            await _db.SaveChangesAsync();
+            _rep.UpdateAsync(oldCar);
+            await _rep.SaveChangesAsync();
 
             return StatusCode(StatusCodes.Status200OK, oldCar);
         }
@@ -76,11 +85,11 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> Delete(int Id)
         {
             if (Id < 0 && Id == null) return BadRequest();
-            Car oldCar = await _db.Cars.FirstOrDefaultAsync(x => x.Id == Id);
+            Car oldCar = await _rep.GetByIdAsync(Id);
             if (oldCar == null) return NotFound();
 
-            _db.Cars.Remove(oldCar);
-            await _db.SaveChangesAsync();
+            _rep.DeleteAsync(oldCar);
+            await _rep.SaveChangesAsync();
 
             return StatusCode(StatusCodes.Status200OK, oldCar);
         }

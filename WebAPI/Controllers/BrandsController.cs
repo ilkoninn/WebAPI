@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using WebAPI.Repositories.Implementations;
+using WebAPI.Repositories.Interfaces;
 
 namespace WebAPI.Controllers
 {
@@ -8,18 +10,18 @@ namespace WebAPI.Controllers
     [ApiController]
     public class BrandsController : ControllerBase
     {
-        private readonly AppDbContext _db;
+        private readonly IBrandRepository _rep;
 
-        public BrandsController(AppDbContext db)
+        public BrandsController(IBrandRepository rep)
         {
-            _db = db;
+            _rep = rep;
         }
 
         // <-- Get API Section -->
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            List<Brand> brands = await _db.Brands.ToListAsync();
+            IQueryable<Brand> brands = await _rep.GetAllAsync();
 
             return StatusCode(StatusCodes.Status200OK, brands);
         }
@@ -29,7 +31,7 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> GetById(int Id)
         {
             if(Id < 0 && Id == null) return BadRequest();
-            Brand oldBrand = await _db.Brands.FirstOrDefaultAsync(x => x.Id == Id);
+            Brand oldBrand = await _rep.GetByIdAsync(Id);
             if(oldBrand == null) return NotFound();
 
 
@@ -39,30 +41,35 @@ namespace WebAPI.Controllers
 
         // <-- Create API Section -->
         [HttpPost]
-        public async Task<IActionResult> Create(Brand newBrand)
+        public async Task<IActionResult> Create([FromForm] CreateBrandDTO createBrandDTO)
         {
-            newBrand.CreatedDate = DateTime.Now;
-            newBrand.UpdatedDate = DateTime.Now;
+            Brand newBrand = new()
+            {
+                Name = createBrandDTO.Name,
+                CreatedDate = DateTime.Now,
+                UpdatedDate = DateTime.Now,
+            };
 
-            await _db.Brands.AddAsync(newBrand);
-            await _db.SaveChangesAsync();
+            await _rep.CreateAsync(newBrand);
+            await _rep.SaveChangesAsync();
 
             return StatusCode(StatusCodes.Status201Created, newBrand);
         }
 
         //<-- Update API Section -->
         [HttpPut]
-        public async Task<IActionResult> Update(int Id, string name)
+        public async Task<IActionResult> Update([FromForm] UpdateBrandDTO updateBrandDTO)
         {
-            if (Id < 0 && Id == null) return BadRequest();
-            Brand oldBrand = await _db.Brands.FirstOrDefaultAsync(x => x.Id == Id);
+            if (updateBrandDTO.Id < 0 && updateBrandDTO.Id == null) return BadRequest();
+            Brand oldBrand = await _rep.GetByIdAsync(updateBrandDTO.Id);
             if (oldBrand == null) return NotFound();
 
-            oldBrand.Name = name;
+            oldBrand.Name = updateBrandDTO.Name;
             oldBrand.CreatedDate = oldBrand.CreatedDate;
             oldBrand.UpdatedDate = DateTime.Now;
 
-            await _db.SaveChangesAsync();
+            _rep.UpdateAsync(oldBrand);
+            await _rep.SaveChangesAsync();
 
             return StatusCode(StatusCodes.Status200OK, oldBrand);
         }
@@ -72,11 +79,11 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> Delete(int Id)
         {
             if (Id < 0 && Id == null) return BadRequest();
-            Brand oldBrand = await _db.Brands.FirstOrDefaultAsync(x => x.Id == Id);
+            Brand oldBrand = await _rep.GetByIdAsync(Id);
             if (oldBrand == null) return NotFound();
 
-            _db.Brands.Remove(oldBrand);
-            await _db.SaveChangesAsync();
+            _rep.DeleteAsync(oldBrand);
+            await _rep.SaveChangesAsync();
 
             return StatusCode(StatusCodes.Status200OK, oldBrand);
         }
