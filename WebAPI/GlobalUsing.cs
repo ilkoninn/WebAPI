@@ -4,3 +4,7 @@ global using WebAPI.Models;
 global using WebAPI.DAL;
 global using Microsoft.AspNetCore.Mvc;
 global using WebAPI.DTOs.BrandDTOs;
+global using AutoMapper;
+global using System.Linq.Expressions;
+global using WebAPI.Repositories.Interfaces;
+global using WebAPI.Services.Interfaces;

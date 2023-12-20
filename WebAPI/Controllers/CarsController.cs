@@ -9,18 +9,18 @@ namespace WebAPI.Controllers
     [ApiController]
     public class CarsController : ControllerBase
     {
-        private readonly ICarRepository _rep;
+        private readonly ICarService _service;
 
-        public CarsController(ICarRepository rep)
+        public CarsController(ICarService service)
         {
-            _rep = rep;
+            _service = service;
         }
 
         // <-- Get API Section -->
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            IQueryable<Car> Cars = await _rep.GetAllAsync();
+            IQueryable<Car> Cars = await _service.GetAllAsync();
 
             return StatusCode(StatusCodes.Status200OK, Cars);
         }
@@ -29,10 +29,7 @@ namespace WebAPI.Controllers
         [Route("{Id}")]
         public async Task<IActionResult> GetById(int Id)
         {
-            if (Id < 0 && Id == null) return BadRequest();
-            Car oldCar = await _rep.GetByIdAsync(Id);
-            if (oldCar == null) return NotFound();
-
+            Car oldCar = await _service.GetByIdAsync(Id);
 
             return StatusCode(StatusCodes.Status200OK, oldCar);
         }
@@ -43,55 +40,27 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> Create([FromForm] CreateCarDTO createCarDTO)
         {
 
-            Car newCar = new()
-            {
-                ModelYear = createCarDTO.ModelYear,
-                DailyPrice = createCarDTO.DailyPrice,
-                Description = createCarDTO.Description,
-                ColorId = createCarDTO.ColorId,
-                BrandId = createCarDTO.BrandId,
-            };
+            await _service.CreateAsync(createCarDTO);
 
-            await _rep.CreateAsync(newCar);
-            await _rep.SaveChangesAsync();
-
-            return StatusCode(StatusCodes.Status201Created, newCar);
+            return StatusCode(StatusCodes.Status201Created);
         }
 
         //<-- Update API Section -->
         [HttpPut]
         public async Task<IActionResult> Update([FromForm] UpdateCarDTO updateCarDTO)
         {
-            if (updateCarDTO.Id < 0 && updateCarDTO.Id == null) return BadRequest();
-            Car oldCar = await _rep.GetByIdAsync(updateCarDTO.Id);
-            if (oldCar == null) return NotFound();
+            var result = _service.UpdateAsync(updateCarDTO);
 
-            oldCar.ModelYear = updateCarDTO.ModelYear;
-            oldCar.Description = updateCarDTO.Description;
-            oldCar.ColorId = updateCarDTO.ColorId;
-            oldCar.BrandId = updateCarDTO.BrandId;
-            oldCar.DailyPrice = updateCarDTO.DailyPrice;
-            oldCar.CreatedDate = oldCar.CreatedDate;
-            oldCar.UpdatedDate = DateTime.Now;
-
-            _rep.UpdateAsync(oldCar);
-            await _rep.SaveChangesAsync();
-
-            return StatusCode(StatusCodes.Status200OK, oldCar);
+            return StatusCode(StatusCodes.Status200OK, result);
         }
 
         //<-- Delete API Section -->
         [HttpDelete]
         public async Task<IActionResult> Delete(int Id)
         {
-            if (Id < 0 && Id == null) return BadRequest();
-            Car oldCar = await _rep.GetByIdAsync(Id);
-            if (oldCar == null) return NotFound();
+            _service.DeleteAsync(Id);
 
-            _rep.DeleteAsync(oldCar);
-            await _rep.SaveChangesAsync();
-
-            return StatusCode(StatusCodes.Status200OK, oldCar);
+            return StatusCode(StatusCodes.Status200OK);
         }
     }
 }

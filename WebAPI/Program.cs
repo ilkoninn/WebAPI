@@ -1,6 +1,7 @@
 
 using WebAPI.Repositories.Implementations;
 using WebAPI.Repositories.Interfaces;
+using WebAPI.Services.Implementations;
 
 namespace WebAPI
 {
@@ -13,6 +14,9 @@ namespace WebAPI
             // Add services to the container.
             builder.Services.AddScoped<IBrandRepository, BrandRepository>();
             builder.Services.AddScoped<ICarRepository, CarRepository>();
+            builder.Services.AddScoped<IBrandService, BrandService>();
+            builder.Services.AddScoped<ICarService, CarService>();
+            builder.Services.AddAutoMapper(typeof(MapperProfile));
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

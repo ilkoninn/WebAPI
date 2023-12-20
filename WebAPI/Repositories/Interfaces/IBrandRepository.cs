@@ -2,13 +2,8 @@
 
 namespace WebAPI.Repositories.Interfaces
 {
-    public interface IBrandRepository
+    public interface IBrandRepository : IRepository<Brand>
     {
-        Task<IQueryable<Brand>> GetAllAsync(Expression<Func<Brand, bool>>? expression = null, params string[] includes);
-        Task<Brand> GetByIdAsync(int Id);
-        Task CreateAsync(Brand newBrand);
-        void UpdateAsync(Brand oldBrand);
-        void DeleteAsync(Brand oldBrand);
-        Task SaveChangesAsync();
+
     }
 }
