@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.Web.Virtualization;
-using System.Linq.Expressions;
-using WebAPI.DTOs.CarDTOs;
-using WebAPI.Repositories.Interfaces;
-using WebAPI.Services.Interfaces;
+﻿using System.Net;
 
 namespace WebAPI.Services.Implementations
 {
@@ -23,7 +19,15 @@ namespace WebAPI.Services.Implementations
         }
         public async Task<Car> GetByIdAsync(int Id)
         {
-            return await _CarRepository.GetByIdAsync(Id);
+            var oldCar = await _CarRepository.GetByIdAsync(Id);
+            if (oldCar is not null)
+            {
+                return oldCar;
+            }
+            else
+            {
+                throw new Exception("Not Found");
+            }
         }
         public async Task<Car> CreateAsync(CreateCarDTO createCarDTO)
         {
@@ -44,6 +48,7 @@ namespace WebAPI.Services.Implementations
 
             return oldCar;
         }
+
         public async void DeleteAsync(int Id)
         {
             Car oldCar = await _CarRepository.GetByIdAsync(Id);

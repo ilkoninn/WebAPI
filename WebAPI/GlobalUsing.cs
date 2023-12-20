@@ -8,3 +8,4 @@ global using AutoMapper;
 global using System.Linq.Expressions;
 global using WebAPI.Repositories.Interfaces;
 global using WebAPI.Services.Interfaces;
+global using WebAPI.DTOs.CarDTOs;

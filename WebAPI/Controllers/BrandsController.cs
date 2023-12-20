@@ -61,7 +61,6 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> Delete(int Id)
         {
             _service.DeleteAsync(Id);
-
             return StatusCode(StatusCodes.Status200OK);
         }
     }
