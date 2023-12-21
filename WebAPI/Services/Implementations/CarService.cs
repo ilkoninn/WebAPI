@@ -15,7 +15,7 @@ namespace WebAPI.Services.Implementations
 
         public async Task<IQueryable<Car>> GetAllAsync(Expression<Func<Car, bool>>? expression = null, params string[] includes)
         {
-            return await _CarRepository.GetAllAsync(expression, includes);
+            return await _CarRepository.GetAllAsync(expressionOrder: x => x.ModelYear, isDescending:true);      
         }
         public async Task<Car> GetByIdAsync(int Id)
         {

@@ -14,12 +14,20 @@ namespace WebAPI.Repositories.Implementations
             _context = context;
             _table = _context.Set<T>();
         }
-        public async Task<IQueryable<T>> GetAllAsync(Expression<Func<T, bool>>? expression = null, params string[] includes)
+        public async Task<IQueryable<T>> GetAllAsync(
+            Expression<Func<T, bool>>? expression = null, 
+            Expression<Func<T, object>>? expressionOrder = null,
+            bool isDescending = false,
+            params string[] includes)
         {
             IQueryable<T> query = _table;
             if (expression is not null)
             {
                 query = query.Where(expression);
+            }
+            if (expressionOrder is not null)
+            {
+                query = isDescending ? query.OrderByDescending(expressionOrder) : query.OrderBy(expressionOrder);
             }
             if (includes is not null)
             {
@@ -51,5 +59,6 @@ namespace WebAPI.Repositories.Implementations
         {
             await _context.SaveChangesAsync();
         }
+
     }
 }
